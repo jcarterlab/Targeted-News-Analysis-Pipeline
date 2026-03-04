@@ -1,8 +1,18 @@
+"""
+Headline scraping module for the Risk Pipeline.
+
+This module retrieves news listing pages, extracts headline text
+and article links, and returns the results as a Pandas DataFrame.
+"""
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import traceback
+
+
+__all__ = ["scrape_headlines"]
 
 
 # ----------------------------------------------------------------------
@@ -19,7 +29,7 @@ def extract_text(element):
 
     Returns:
         str | None:
-            Stripped element text, or None if element is none or has no text. 
+            Stripped element text, or None if element is None or has no text. 
     """
     if element is None:
         return None
