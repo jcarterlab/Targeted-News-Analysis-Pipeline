@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+import config
 import pandas as pd
 import numpy as np
 import re
@@ -7,7 +9,6 @@ import time
 
 from google import genai
 import os
-from dotenv import load_dotenv
 
 from risk_pipeline.scrape_headlines import scrape_headlines
 from risk_pipeline.identify_risk_headlines import identify_risk_headlines
@@ -20,7 +21,6 @@ from risk_pipeline.summarise_stories import summarise_stories
 # PARAMETERS
 # ----------------------------------------------------------------------
 
-request_timeout = 12
 llm_headline_batch_size = 40
 llm_retry_attempts = 3
 llm_wait_time = 12
@@ -52,8 +52,16 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 # MAIN PIPELINE
 # ----------------------------------------------------------------------
 
-headlines_df = scrape_headlines(request_timeout)
 
+
+headlines_df = scrape_headlines('links.csv', config)
+print(headlines_df)
+
+
+
+
+
+'''
 risk_headlines_df = identify_risk_headlines(
     client, 
     headlines_df, 
@@ -79,4 +87,6 @@ executive_summary = summarise_stories(
 )
 
 print(executive_summary)
+
+'''
 

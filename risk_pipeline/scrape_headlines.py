@@ -2,47 +2,66 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import traceback
 
 
 # ----------------------------------------------------------------------
 # HELPER FUNCTIONS
 # ----------------------------------------------------------------------
 
-def filter_non_headlines(elements):
-    """
-    Filters a list of elements to remove short, likely non-headline texts.
-    """
-    try: 
-        return [x for x in elements if len(x.text.strip()) >= 25]
-    except Exception:
-        return []
-
-    
-
 def extract_text(element):
     """
-    Returns stripped text from a given element.
-    """
-    try: 
-        return element.text.strip()
-    except Exception:
-        return None
+    Return stripped text for a BeautifulSoup element.
 
+    Args:
+        element (bs4.element.Tag | None):
+            BeautifulSoup Tag object from which text should be extracted.
+
+    Returns:
+        str | None:
+            Stripped element text, or None if element is none or has no text. 
+    """
+    if element is None:
+        return None
+    
+    try: 
+        return element.get_text(strip=True) or None
+    except Exception as e:
+        print(
+            f'Error: extract_text failed\n'
+            f'    element={repr(element)[:200]}\n'
+            f'    {type(e).__name__}: {e}'
+        )
+        return None
 
 
 def extract_link(element, base_url):
     """
-    Extracts a link from a BeautifulSoup element.
-    Converts relative URLs to absolute URLs.
+    Extract an absolute URL from a BeautifulSoup element.
+
+    Args:
+        element (bs4.element.Tag):
+            BeautifulSoup Tag object from which text should be extracted.
+        base_url (str):
+            Initial part of the URL needed to create a full URL from relative links.
+
+    Returns:
+        str | None:
+            Absolute URL, or None if not possible to construct.
     """
+    if element is None:
+        return None
+    
     try:
-        href = element.get("href")
-        if not href:
-            return None
+        href = element.get('href')
+        return urljoin(base_url, href) if href else None
 
-        return urljoin(base_url, href)
-
-    except Exception:
+    except Exception as e:
+        print(
+            f'Error: extract_link failed\n'
+            f'    element={repr(element)[:200]}\n'
+            f'    {type(e).__name__}: {e}'
+        )
         return None
 
 
@@ -51,103 +70,174 @@ def extract_link(element, base_url):
 # SCRAPING FUNCTIONS
 # ----------------------------------------------------------------------
 
-def get_headline_elements(page_url, request_timeout, tag):
+def scrape_headline_elements(page_url, tag, config):
     """
-    Fetches a webpage and returns all elements matching the given tag.
-    """
+    Retrieve a webpage and return all elements matching a given tag.
 
+    Args:
+        page_url (str):
+            URL of the page to be scraped.
+        tag (str):
+            HTML tag used to identify headline elements.
+        config (module): 
+            Config module with REQUEST_TIMEOUT, etc.
+
+    Returns:
+        list[bs4.element.Tag]:
+            List of BeautifulSoup elements matching the tag.
+    """
     headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; RiskPipelineBot/1.0)"
+        'User-Agent': 'Mozilla/5.0 (compatible; RiskPipelineBot/1.0)'
     }
 
     try:
-        response = requests.get(page_url, headers=headers, timeout=request_timeout)
+        response = requests.get(
+            page_url, 
+            headers=headers, 
+            timeout=config.REQUEST_TIMEOUT
+        )
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.content, "html.parser")
+        soup = BeautifulSoup(response.content, 'html.parser')
         return soup.find_all(tag)
 
     except requests.exceptions.RequestException as e:
-        print(f"Error: request failed for {page_url}: {e}")
-        return []
+        print(
+            'Error: request failed\n'
+            f'    page_url={page_url}\n'
+            f'    tag={tag}\n'
+            f'    {type(e).__name__}: {e}'
+        )
+        return None
     
 
-
-def create_headlines_dataframe(page_url, request_timeout, tag, base_url, story_tag, story_class):
-
+def build_headlines_dataframe(
+        page_url, 
+        tag, 
+        base_url, 
+        story_tag, 
+        story_class, 
+        config
+    ):
     """
-    Returns a pandas dataframe with headline texts and url links for a single link in links_df.csv. 
+    Build a Pandas DataFrame of headline texts and URLs from a news listing page.
+
+    Args:
+        page_url (str): 
+            URL of the news page to scrape.
+        tag (str): 
+            Tag name used to select headline elements (e.g., 'a', 'h2').
+        base_url (str): 
+            Base URL used to resolve relative hrefs.
+        story_tag (str): 
+            Tag name used later to scrape the news story body text.
+        story_class (str): 
+            Class name used later to scrape the news story body text.
+        config (module): 
+            Config module with MIN_HEADLINE_LENGTH, etc.
+    
+    Returns:
+        pd.DataFrame:
+            Columns: headline, link, story_tag, story_class
     """
+    columns = ['headline', 'link', 'story_tag', 'story_class']
 
-    elements = get_headline_elements(page_url, request_timeout, tag)
-    filtered_elements = filter_non_headlines(elements)
+    elements = scrape_headline_elements(page_url, tag, config)
 
-    texts, links = [], []
-    for element in filtered_elements: 
-        text = extract_text(element)
-        link = extract_link(element, base_url)
+    if elements is None:
+        return pd.DataFrame(columns=columns)
 
-        if text and link:
-            texts.append(text)
-            links.append(link)
+    if not elements:
+        print(
+            'Warning: no elements found\n'
+            f'    page_url={page_url}\n'
+            f'    tag={tag}'
+        )
+        return pd.DataFrame(columns=columns)
 
-    print(f'Headlines returned: {len(texts)}')
+    headlines = []
+    for el in elements: 
+        text = extract_text(el)
+        if not text or len(text) < config.MIN_HEADLINE_LENGTH:
+            continue
 
-    headlines = pd.DataFrame({
-        'Headline': texts,
-        'Link': links,
-        'story_tag': [story_tag for x in texts],
-        'story_class': [story_class for x in texts]
-    })
+        link = extract_link(el, base_url)
+        if not link:
+            continue
 
-    return headlines
+        headlines.append({
+            'headline': text,
+            'link': link,
+            'story_tag': story_tag,
+            'story_class': story_class
+        })
+
+    print(
+        f'Headlines returned: {len(headlines)} | '
+        f'elements_found: {len(elements)}'
+    )
+
+    return pd.DataFrame(headlines, columns=columns)
 
 
-
-def scrape_headlines(request_timeout):
+def scrape_headlines(links_csv_path, config):
     """
-    Returns a pandas dataframe with headline texts and url links for each row in link_df.csv. 
+    Scrape headline text and links for each news source defined in a links CSV.
+
+    Args:
+        links_csv_path (str): 
+            Path to CSV containing scraping configs per source.
+        config (module): 
+            Config module with REQUEST_TIMEOUT, MIN_HEADLINE_LENGTH, etc.
+            
+    Returns:
+        pd.DataFrame: 
+            Combined headlines with columns including headline, link, story_tag and story_class. 
     """
-    # reads in the links csv file
     try:
-        links_data = pd.read_csv('links.csv', encoding='utf-8')
+        links_df = pd.read_csv(links_csv_path, encoding='utf-8')
     except FileNotFoundError:
-        raise RuntimeError('links.csv not found')
+        raise RuntimeError(f'{links_csv_path} not found')
     
-    # raises an error if links csv empty 
-    if links_data.empty:
-        raise RuntimeError('links.csv is empty')
+    if links_df.empty:
+        raise RuntimeError(f'{links_csv_path} is empty')
     
-    print(f'\nLinks to be scraped: {len(links_data)}\n')
+    required_cols = {"page_url", "tag", "base_url", "story_tag", "story_class"}
+    missing_cols = required_cols - set(links_df.columns)
+    if missing_cols:
+        raise RuntimeError(f'{links_csv_path} missing required columns: {sorted(missing_cols)}')
 
-    # scrapes each link and stores the headlines as a pandas dataframe
+    print(
+        f'\nLinks to be scraped: {len(links_df)}\n'
+    )
+
     headlines_dfs = []
 
-    for row in links_data.itertuples(index=False):
+    for row in links_df.itertuples(index=False):
         try:
-            headlines_dfs.append(
-                create_headlines_dataframe(
-                    row.page_url, 
-                    request_timeout,
-                    row.tag, 
-                    row.base_url,
-                    row.story_tag,
-                    row.story_class
-                )
+            df = build_headlines_dataframe(
+                row.page_url, 
+                row.tag, 
+                row.base_url,
+                row.story_tag,
+                row.story_class,
+                config
             )
+            if not df.empty:
+                headlines_dfs.append(df)
 
         except Exception as e:
-            print(f"Error: failed processing {row.page_url}: {e}")
+            print(f'Error: failed processing {row.page_url}: {e}')
+            traceback.print_exc()
             continue
         
-    # returns a concatenated headlines dataframe for all links
     if not headlines_dfs:
         raise RuntimeError('no headlines dataframes were created')
 
     headlines_df = pd.concat(headlines_dfs, ignore_index=True)
 
     if headlines_df.empty:
-        raise RuntimeError("No headlines were extracted from any source")
+        raise RuntimeError('No headlines were extracted from any source')
     
     print(f'\nTotal headlines: {len(headlines_df)}\n')
 
