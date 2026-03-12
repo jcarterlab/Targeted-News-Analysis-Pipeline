@@ -1,40 +1,83 @@
-# 📰 Targeted-News-Analysis-Pipeline
+# 📰 Targeted News Monitoring Pipeline
 
-A Python pipeline that scrapes news websites and uses a large language model to identify and summarize news stories relevant to a specific entity and risk type.
+A Python pipeline that uses web scraping and LLMs to monitor news events based on a certain risk type. The system is designed to allow analysts to detect emerging risks such as supply chain disruptions, regulatory changes or geopolitical events more efficiently. It is particularly useful in emerging markets with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. 
 
-The system is designed for targeted monitoring of news events, allowing organizations to detect emerging risks such as supply chain disruptions, regulatory changes or geopolitical events.
+**Key technologies:** Python, BeautifulSoup, Pandas, LLM APIs, prompt engineering.
 
 
 ## 🔍 Overview
 
 The pipeline performs the following steps:
 
-1. Scrapes headlines from a list of news sources
-2. Filters headlines and batches them for LLM processing
-3. Uses a Gemini model to identify risk-relevant headlines
-4. Scrapes full article text for selected stories
-5. Generates summaries of the relevant events
+1. Scrapes headlines from multiple news listing pages
+2. Uses an LLM to identify risk-relevant headlines
+3. Scrapes full article texts for the flagged stories
+4. Uses a two-stage LLM summarisation process to generate a final summary
 
-This approach allows large volumes of news to be processed efficiently while focusing only on stories relevant to a specific risk profile.
+This approach allows large volumes of news to be processed efficiently while focusing only on stories relevant to a specific risk type.
 
 
-## 💻 Example Use
+## ⚙️ Customization
 
-Monitoring news for events relevant to:
+New monitoring can be customised based on:
 
-- Entity: a logistics firm
-- Risk type: port disruption events
-- Confidence threshold: 95%
+- Entity of concern (e.g. a logistics firm operating in Colombia)
+- Risk type (e.g. transport disruption events)
+- Confidence rate (e.g. 95%)
 
-The model evaluates batches of headlines and returns the indices of those considered relevant.
+A variety of other parameters such as batch size, model type, retry attempts and more can also be adjusted. 
 
-Example response:
 
-```python
-[3, 7, 12]
+## 🧪 Example Flow
+
+```
+links.csv
+     │
+     ▼
+scrape_headlines
+     │
+     │ Example output (Spanish):
+     │ [
+     │   "Paro portuario en Buenaventura amenaza exportaciones",
+     │   "Aumentan las exportaciones de café pese a retrasos logísticos",
+     │   "Sindicato ferroviario anuncia protestas nacionales",
+     │   ...
+     │ ]
+     │
+     ▼
+identify_risk_headlines (lightweight model)
+     │
+     │ Example output (headline indices):
+     │ [0, 2, 15, 21]
+     │
+     ▼
+scrape_stories
+     │
+     │ Example output (Spanish):
+     │ [
+     │   "Trabajadores portuarios en Buenaventura iniciaron un paro...",
+     │   "El sindicato nacional ferroviario anunció protestas que..."
+     │   ...
+     │ ]
+     │
+     ▼
+summarise_stories (basic & advanced models)
+     │
+     │ Example output (English):
+     │ "Labour disputes in Colombia's port and rail sectors may disrupt
+     │ freight movement and export logistics in the coming days. Also..."
+     │
+     ▼
+the end user
 ```
 
-These indices are validated and used to select rows from the headline dataset.
+
+## 📐 Architectural Decisions
+
+
+- **Batch headline identification:** The scraped headlines are evaluated in batches using a lightweight LLM model to improve efficiency. Headlines are joined together, separated by index numbers and fed into the LLM via a prompt asking it to return only the indices of potential risk stories as a Python-style list.
+
+- **Two-stage LLM summarisation:** The scraped story text undergoes a two-stage LLM summarisation process to improve relevance. The story text is compiled into batches and summarised using a lightweight LLM model before an advanced model is instructed to use critical judgement in producing a concise final summary. 
 
 
 ## 🗂️ Project Structure
@@ -51,46 +94,30 @@ targeted-news-analysis-pipeline
     ├── identify_risk_headlines.py
     ├── scrape_stories.py
     ├── summarise_stories.py
-    └── prompts.py
+    └── build_prompts.py
 ```
 
-## 🚀 Getting Started
-
-### Installation
-
-Create a virtual environment:
+## 🚀 Quick Start
 
 ```bash
+# Clone the repository
+git clone https://github.com/jcarterlab/Targeted-News-Analysis-Pipeline.git
+
+cd Targeted-News-Analysis-Pipeline
+
+# Create virtual environment
 python -m venv .venv
-```
-
-Activate it:
-
-```bash
 source .venv/bin/activate
-```
 
-Install dependencies:
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
+Configure the pipeline in `config.py` and provide your news source links and CSS selectors in `links.csv`.
 
-### Environment Variables
-
-Create a .env file in the project root containing your Gemini API key:
+Run the pipeline:
 
 ```bash
-GEMINI_API_KEY=your_api_key_here
-```
-
-
-### Running the Pipeline
-
-Run the pipeline with:
-
-```python
 python main.py
 ```
 
