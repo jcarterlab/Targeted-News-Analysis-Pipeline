@@ -1,22 +1,28 @@
 """
 Configuration settings module.
 
-This module loads values  from environment variables where 
-available, with sensible defaults provided for local execution.
+This module loads values from environment variables where 
+available with sensible defaults provided for local execution.
 """
 
 
 from dotenv import load_dotenv
+from pathlib import Path
 import os
 
 load_dotenv()
 
 
 # --------------------------------------------------
-# Links file path
+# Project paths
 # --------------------------------------------------
 
-LINKS_FILE = os.getenv('LINKS_FILE', 'links.csv') # path to links file
+BASE_DIR = Path(__file__).resolve().parent
+LINKS_PATH = BASE_DIR / "links.csv" # path to links csv
+
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+DB_PATH = DATA_DIR / "processed_headlines.db" # path to processed_headlines.db
 
 
 # --------------------------------------------------

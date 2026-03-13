@@ -198,14 +198,14 @@ def scrape_headlines(config):
 
     Args:
         config (module): 
-            Configuration module containing 'LINKS_FILE', 'REQUEST_TIMEOUT' and 
+            Configuration module containing 'LINKS_PATH', 'REQUEST_TIMEOUT' and 
             'MIN_HEADLINE_LENGTH'. 
             
     Returns:
         pd.DataFrame: 
             Combined headlines with columns including headline, link, story_tag and story_class. 
     """
-    links_path = config.LINKS_FILE
+    links_path = config.LINKS_PATH
     try:
         links_df = pd.read_csv(links_path, encoding='utf-8')
     except FileNotFoundError:
