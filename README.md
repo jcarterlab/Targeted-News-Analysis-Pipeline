@@ -140,7 +140,7 @@ The pipeline will run using the example news sources provided in `links.csv` and
 
 ## ⚙️ Custom Configuration
 
-The pipeline can be customised by modifying the news sources, risk detection parameters and optional pipeline settings.
+The pipeline supports three levels of customisation:
 
 ### 1. Define news sources
 
