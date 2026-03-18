@@ -7,14 +7,14 @@ those that may represent risks to a specified entity and risk category.
 
 import time
 import re
-from risk_pipeline.build_prompts import headline_identification_prompt 
+from news_monitoring_pipeline.build_prompts import headline_identification_prompt 
 
 
 # ----------------------------------------------------------------------
 # HELPER FUNCTIONS
 # ----------------------------------------------------------------------
 
-def number_headlines(headlines_df):
+def number_headlines(new_headlines_df):
     """
     Convert a DataFrame of headlines into numbered headline strings.
 
@@ -28,7 +28,7 @@ def number_headlines(headlines_df):
     """
     return [
         f'{i}. {headline or ""}'
-        for i, headline in enumerate(headlines_df['headline'], start=1)
+        for i, headline in enumerate(new_headlines_df['headline'], start=1)
     ]
 
 
@@ -175,7 +175,7 @@ def return_risk_headlines(client, prompt, i, max_len, config):
 # ORCHESTRATION FUNCTIONS 
 # ----------------------------------------------------------------------
 
-def identify_risk_headlines(client, headlines_df, config):
+def identify_risk_headlines(client, new_headlines_df, config):
     """
     Identify potential risk-related headlines using an LLM.
 
@@ -193,9 +193,9 @@ def identify_risk_headlines(client, headlines_df, config):
         pd.DataFrame:
             Subset of the input DataFrame containing headlines identified as potential risks.
     """
-    max_len = len(headlines_df)
+    max_len = len(new_headlines_df)
 
-    numbered_headlines = number_headlines(headlines_df)
+    numbered_headlines = number_headlines(new_headlines_df)
 
     headline_batches = batch_headlines(numbered_headlines, config)
 
@@ -224,4 +224,4 @@ def identify_risk_headlines(client, headlines_df, config):
 
     print(f'\nTotal indices: {len(all_indices)}\n')
 
-    return headlines_df.iloc[all_indices]
+    return new_headlines_df.iloc[all_indices]

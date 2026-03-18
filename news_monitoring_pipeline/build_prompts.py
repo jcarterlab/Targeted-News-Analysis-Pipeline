@@ -74,7 +74,7 @@ def story_text_summarization_prompt(today_date, story_text, config):
     You are a highly experienced analyst. 
     I'm going to give you raw text scraped from one or more web pages on {today_date}.
     I want you to analyze the text and summarize events which pose a potential risk to {entity_of_concern} in terms of {risk_type}. 
-    The text will be thousands of words long, but I want you to return a thoughtful summary of no more than 500 words. 
+    The text will be thousands of words long, but I want you to return a thoughtful summary of no more than 300 words. 
     Summarise factual developments in English without opinion, bias, sensationalism, inflammatory wording or speculation.
     Only summarize events present in the text - do not invent events or infer facts not explicitly stated.
     Pay attention to the logical consistency of your summary - do not say things that directly contradict one another.
@@ -121,7 +121,7 @@ def executive_summary_prompt(today_date, combined_summaries, config):
     You are a highly experienced lead analyst. 
     I'm going to give multiple summaries from your team based on news from {today_date}. 
     I want you to produce an executive summary of events which pose a potential risk to {entity_of_concern} in terms of {risk_type}. 
-    The combined summaries may be thousands of words long, but I want you to return a thoughtful summary of no more than 200 words. 
+    The combined summaries may be thousands of words long, but I want you to return a thoughtful summary of no more than 300 words. 
     Summarise factual developments in English without opinion, bias, sensationalism, inflammatory wording or speculation.
     Be highly critical and only summarize events present in the text - do not invent events or infer facts not explicitly stated.
     Pay attention to the logical consistency of your summary - do not say things that directly contradict one another.

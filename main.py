@@ -4,11 +4,12 @@ from datetime import datetime, timezone
 from google import genai
 
 import config
-from risk_pipeline.scrape_headlines import scrape_headlines
-from risk_pipeline.identify_risk_headlines import identify_risk_headlines
-from risk_pipeline.scrape_stories import scrape_stories
-from risk_pipeline.summarise_stories import summarise_stories
-
+from news_monitoring_pipeline.scrape_headlines import scrape_headlines
+from news_monitoring_pipeline.deduplicate_headlines import deduplicate_headlines
+from news_monitoring_pipeline.identify_risk_headlines import identify_risk_headlines
+from news_monitoring_pipeline.scrape_stories import scrape_stories
+from news_monitoring_pipeline.summarise_stories import summarise_stories
+from news_monitoring_pipeline.store_headlines import store_headlines
 
 # ----------------------------------------------------------------------
 # MAIN PIPELINE
@@ -30,13 +31,19 @@ def run_pipeline(client, today_date, config):
         str:
             Final summary generated from relevant news stories.
     """
+    # Headline collection
     headlines_df = scrape_headlines(config)
+    new_headlines_df = deduplicate_headlines(headlines_df, config)
 
-    risk_headlines_df = identify_risk_headlines(client, headlines_df, config)
+    # Risk identification
+    risk_headlines_df = identify_risk_headlines(client, new_headlines_df, config)
 
+    # Story processing
     story_texts = scrape_stories(risk_headlines_df, config)
-
     final_summary = summarise_stories(client, story_texts, today_date, config)
+
+    # Storage
+    store_headlines(new_headlines_df, config)
 
     return final_summary
 
@@ -54,4 +61,6 @@ if __name__ == "__main__":
     today_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     
     final_summary = run_pipeline(client, today_date, config)
+
+    print('\n--- Final Summary ---\n')
     print(final_summary)
