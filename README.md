@@ -2,7 +2,7 @@
 
 A Python pipeline for news monitoring using scraping, LLM classification and LLM summarisation. 
 
-The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing news content. Risk detection can also be customised based on the entity of concern (e.g. a logistics firm), risk type (e.g. transport disruption events) and confidence rate (e.g. 95%). 
+The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing news content. Risk detection can be customised based on the entity of concern (e.g. a logistics firm), risk type (e.g. transport disruption events) and confidence rate (e.g. 95%). 
 
 **Key technologies:** Python, BeautifulSoup, Pandas, Gemini API, prompt engineering.
 
@@ -18,7 +18,7 @@ The pipeline performs the following steps:
 5. Uses a two-stage LLM summarisation process to generate a final summary
 6. Saves processed headlines to the database
 
-This allows large volumes of news to be processed efficiently while focusing only on stories relevant to a specific risk type.
+This allows large volumes of news to be processed efficiently by focusing only on relevant stories.
 
 
 ## 🧪 Example Flow
