@@ -1,6 +1,6 @@
 # 📰 Targeted News Monitoring Pipeline
 
-A Python pipeline for news monitoring using scraping, LLM classification and LLM summarisation. 
+A Python pipeline for news monitoring using web scraping, LLM classification and LLM summarisation. 
 
 The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing news content. Risk detection can be customised based on the entity of concern (e.g. a logistics firm), risk type (e.g. transport disruption events) and confidence rate (e.g. 95%). 
 
@@ -63,7 +63,7 @@ scrape_stories
      │ Example output (Spanish):
      │ [
      │   "Trabajadores portuarios en Buenaventura iniciaron un paro...",
-     │   "Autoridades reportan retrasos en la cadena logística tras bloqueo en carretera clave...",
+     │   "Autoridades reportan retrasos en la cadena logística tras bloqueo...",
      │   ...
      │ ]
      │
@@ -82,29 +82,33 @@ store_headlines
 ## 🗂️ Project Structure
 
 ```text
-targeted-news-monitoring-pipeline
+targeted-news-monitoring-pipeline/
 │
 ├── main.py
 ├── config.py
 ├── links.csv
 ├── .env.example
 │
-├── data
-│   └── processed_headlines.db
+├── data/
+│   └── .gitkeep
 │
-├── utils
+├── utils/
 │   ├── __init__.py
 │   └── database.py
 │
-└── news_monitoring_pipeline
+├── news_monitoring_pipeline/
+│   ├── __init__.py
+│   ├── build_prompts.py
+│   ├── scrape_headlines.py
+│   ├── deduplicate_headlines.py
+│   ├── identify_risk_headlines.py
+│   ├── scrape_stories.py
+│   ├── summarise_stories.py
+│   └── store_headlines.py
+│
+└── tests/
     ├── __init__.py
-    ├── build_prompts.py
-    ├── scrape_headlines.py
-    ├── deduplicate_headlines.py
-    ├── identify_risk_headlines.py
-    ├── scrape_stories.py
-    ├── summarise_stories.py
-    └── store_headlines.py
+    └── test_scrape_headlines.py
 ```
 
 
@@ -152,12 +156,12 @@ Example:
 links.csv
    │
    ▼
-┌───────────┬───────────────────────────────────┬───────────────────────────┬─────┬───────────┬─────────────┐
-│ website   │ page_url                          │ base_url                  │ tag │ story_tag │ story_class │
-├───────────┼───────────────────────────────────┼───────────────────────────┼─────┼───────────┼─────────────┤
-│ El Tiempo │ https://www.eltiempo.com/colombia │ https://www.eltiempo.com/ │ a   │ div       │ paragraph   │
-│ ...       │ ...                               │ ...                       │ ... │ ...       │ ...         │
-└───────────┴───────────────────────────────────┴───────────────────────────┴─────┴───────────┴─────────────┘
+┌───────────┬───────────────────────────┬───────────────────┬─────┬───────────┬─────────────┐
+│ website   │ page_url                  │ base_url          │ tag │ story_tag │ story_class │
+├───────────┼───────────────────────────┼───────────────────┼─────┼───────────┼─────────────┤
+│ El Tiempo │ www.eltiempo.com/colombia │ www.eltiempo.com/ │ a   │ div       │ paragraph   │
+│ ...       │ ...                       │ ...               │ ... │ ...       │ ...         │
+└───────────┴───────────────────────────┴───────────────────┴─────┴───────────┴─────────────┘
 ```
 
 ### 2. Risk detection parameters
@@ -180,11 +184,13 @@ RISK_CONFIDENCE_THRESHOLD=95
 
 Edit `.env` to define:
 
-- **Request timeout** (e.g. 10 seconds)
+- **Request timeout** for scraping (e.g. 10 seconds)
 - **Minimum headline length** for filtering non-headlines (e.g. 25 characters)
 - **Headline batch size** for LLM classification (e.g. 40 headlines)
 - **Retry attempts** for failed LLM API calls before moving on (e.g. 3 attempts)
 - **LLM wait time** between API calls (e.g. 10 seconds)
+- **Basic model** for less complex tasks (e.g. gemini-2.5-flash)
+- **Advanced model** for more complex tasks (e.g. gemini-2.5-pro)
 - **Story words batch size** for LLM summarisation (e.g. 12,000 words)
 
 Example:
@@ -195,6 +201,8 @@ MIN_HEADLINE_LENGTH=25
 LLM_HEADLINE_BATCH_SIZE=40
 LLM_RETRY_ATTEMPTS=3
 LLM_WAIT_TIME=10
+BASIC_MODEL=gemini-2.5-flash
+ADVANCED_MODEL=gemini-2.5-pro
 LLM_STORY_WORDS_BATCH_SIZE=12000
 ```
 
