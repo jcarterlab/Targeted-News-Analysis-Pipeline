@@ -152,12 +152,12 @@ Example:
 links.csv
    │
    ▼
-┌───────────────┬────────────────────────────────────┬────────────────────────────┬─────┬───────────┬──────────────────┐
-│ website       │ page_url                           │ base_url                   │ tag │ story_tag │ story_class      │
-├───────────────┼────────────────────────────────────┼────────────────────────────┼─────┼───────────┼──────────────────┤
-│ El Tiempo     │ https://www.eltiempo.com/colombia  │ https://www.eltiempo.com/  │ a   │ div       │ paragraph        │
-│ ...           │ ...                                │ ...                        │ ... │ ...       │ ...              │
-└───────────────┴────────────────────────────────────┴────────────────────────────┴─────┴───────────┴──────────────────┘
+┌───────────┬───────────────────────────────────┬───────────────────────────┬─────┬───────────┬─────────────┐
+│ website   │ page_url                          │ base_url                  │ tag │ story_tag │ story_class │
+├───────────┼───────────────────────────────────┼───────────────────────────┼─────┼───────────┼─────────────┤
+│ El Tiempo │ https://www.eltiempo.com/colombia │ https://www.eltiempo.com/ │ a   │ div       │ paragraph   │
+│ ...       │ ...                               │ ...                       │ ... │ ...       │ ...         │
+└───────────┴───────────────────────────────────┴───────────────────────────┴─────┴───────────┴─────────────┘
 ```
 
 ### 2. Risk detection parameters
@@ -208,7 +208,7 @@ Headlines are checked against an SQLite database to improve efficiency. Previous
 The scraped headlines are evaluated in batches using a lightweight LLM to improve efficiency. Headlines are numbered and joined together before an LLM is instructed to return the indices of potential risk stories. This reduces the number of LLM calls needed. 
 
 - **Two-stage LLM summarisation**  
-The scraped story text undergoes multiple rounds of summarisation to improve relevance. The text is summarised in batches using a lightweight LLM before an advanced LLM produces a final executive summary. This reduces the likelihood of important details being missed.
+The scraped story text undergoes multiple rounds of summarisation to improve relevance. The text is summarised in batches using a lightweight LLM before an advanced LLM produces a final executive summary. This helps ensure important details are communicated concisely. 
 
 
 ## 📃 License

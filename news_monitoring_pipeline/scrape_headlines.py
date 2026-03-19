@@ -32,7 +32,8 @@ def extract_text(element):
         return None
     
     try: 
-        return element.get_text(strip=True) or None
+        text = element.get_text(' ', strip=True)
+        return ' '.join(text.split()) if text else None
     except Exception as e:
         print(
             f'Error: extract_text failed\n'
