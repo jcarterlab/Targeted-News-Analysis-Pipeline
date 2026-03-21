@@ -26,9 +26,10 @@ def number_headlines(new_headlines_df):
         list[str]:
             A list of headline strings each prefixed with an index number.
     """
+    headlines = new_headlines_df['headline'].fillna('')
     return [
         f'{i}. {headline or ""}'
-        for i, headline in enumerate(new_headlines_df['headline'], start=1)
+        for i, headline in enumerate(headlines, start=1)
     ]
 
 

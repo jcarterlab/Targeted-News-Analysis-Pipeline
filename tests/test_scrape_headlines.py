@@ -95,3 +95,5 @@ class TestExtractLink:
                 raise Exception('boom')
 
         assert extract_link(BadElement(), 'https://example.com') is None
+        
+        

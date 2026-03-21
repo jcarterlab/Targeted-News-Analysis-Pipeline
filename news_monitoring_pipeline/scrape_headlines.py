@@ -57,7 +57,7 @@ def extract_link(element, base_url):
         str | None:
             Absolute URL, or None if not possible to construct.
     """
-    if element is None:
+    if element is None or not base_url:
         return None
     
     try:

@@ -108,7 +108,8 @@ targeted-news-monitoring-pipeline/
 │
 └── tests/
     ├── __init__.py
-    └── test_scrape_headlines.py
+    ├── test_scrape_headlines.py
+    └── test_identify_risk_headlines.py
 ```
 
 
