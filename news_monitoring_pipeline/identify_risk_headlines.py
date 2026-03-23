@@ -27,6 +27,7 @@ def number_headlines(new_headlines_df):
             A list of headline strings each prefixed with an index number.
     """
     headlines = new_headlines_df['headline'].fillna('')
+
     return [
         f'{i}. {headline or ""}'
         for i, headline in enumerate(headlines, start=1)
@@ -48,6 +49,7 @@ def batch_headlines(numbered_headlines, config):
             List of strings each containing up to 'LLM_HEADLINE_BATCH_SIZE' numbered headlines.
     """
     batch_size = config.LLM_HEADLINE_BATCH_SIZE
+
     if not numbered_headlines:
         return []
 
@@ -69,7 +71,7 @@ def extract_index_numbers(response, max_len):
         response (object):
             Gemini response object expected to contain a 'text' attribute.
         max_len (int):
-            Maximum number of headlines (used to validate indices before they are used with '.iloc').
+            Maximum possible number of headlines (used to validate indices before they are used with '.iloc').
 
     Returns:
         tuple:
