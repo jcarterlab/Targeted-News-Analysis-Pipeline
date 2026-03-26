@@ -29,7 +29,7 @@ links.csv
      ▼
 scrape_headlines
      │
-     │ Example output (Spanish):
+     │ Example output (Spanish headlines):
      │ [
      │   "Sindicato ferroviario anuncia protestas nacionales",
      │   "Paro portuario en Buenaventura amenaza exportaciones",
@@ -40,7 +40,7 @@ scrape_headlines
      ▼
 deduplicate_headlines
      │
-     │ Example output (Spanish):
+     │ Example output (Spanish headlines):
      │ [
      │   "Paro portuario en Buenaventura amenaza exportaciones",
      │   "Aumentan las exportaciones de café pese a retrasos logísticos",
@@ -60,7 +60,7 @@ identify_risk_headlines
      ▼
 scrape_stories
      │
-     │ Example output (Spanish):
+     │ Example output (Spanish story text):
      │ [
      │   "Trabajadores portuarios en Buenaventura iniciaron un paro...",
      │   "Autoridades reportan retrasos en la cadena logística tras bloqueo...",
@@ -70,7 +70,7 @@ scrape_stories
      ▼
 summarise_stories
      │
-     │ Example output (English):
+     │ Example output (English summary):
      │ "Labour disputes in Colombia's port and rail sectors may disrupt
      │ freight movement and export logistics in the coming days. Also..."
      │
@@ -88,6 +88,7 @@ targeted-news-monitoring-pipeline/
 ├── config.py
 ├── links.csv
 ├── .env.example
+├── requirements.txt
 ├── pytest.ini
 │
 ├── data/
