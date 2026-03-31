@@ -4,7 +4,7 @@ A Python news analysis pipeline that uses web scraping and LLMs for scalable ris
 
 The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. Risk detection can be customised based on the entity of concern (e.g. a logistics firm), risk type (e.g. transport disruption events) and confidence rate (e.g. 95%). 
 
-**Key technologies:** Python, BeautifulSoup, Pandas, Gemini API, prompt engineering.
+**Key technologies:** Python, BeautifulSoup, SQLite, Pandas, Google Gemini API, Resend.
 
 
 ## 🔍 Overview
@@ -17,9 +17,18 @@ The pipeline performs the following steps:
 4. Scrapes full article texts for flagged stories
 5. Uses a two-stage LLM summarisation process to generate a final summary
 6. Saves processed headlines to the database
+7. Optionally sends an email alert to the end user(s)
 
-This allows large volumes of news to be processed efficiently.
+## 🧠 Design Decisions
 
+- **Headline deduplication**  
+Avoids reprocessing by storing previously seen links in SQLite, reducing unnecessary scraping and LLM usage.
+
+- **Batch headline identification**  
+Headlines are grouped and passed to the LLM as indexed lists, allowing it to return only relevant indices. This significantly reduces API calls.
+
+- **Two-stage LLM summarisation**  
+A lightweight model summarises batches of articles, followed by a stronger model producing a final executive summary. This improves quality while controlling cost.
 
 ## 🧪 Example Flow
 
@@ -107,50 +116,6 @@ email_summaries (optional)
      ▼
 the end user
 ```
-
-
-## 🗂️ Project Structure
-
-```text
-NewsMonitor/
-│
-├── main.py
-├── config.py
-├── links.csv
-├── emails.example.csv
-├── .env.example
-├── requirements.txt
-├── pytest.ini
-│
-├── data/
-│   └── .gitkeep
-│
-├── utils/
-│   ├── __init__.py
-│   └── database.py
-│
-├── newsmonitor/
-│   ├── __init__.py
-│   ├── build_prompts.py
-│   ├── scrape_headlines.py
-│   ├── deduplicate_headlines.py
-│   ├── identify_risk_headlines.py
-│   ├── scrape_stories.py
-│   ├── summarise_stories.py
-│   ├── store_headlines.py
-│   └── email_summaries.py
-│
-└── tests/
-    ├── utils/
-    │   └── test_database.py
-    │
-    └── newsmonitor/
-        ├── test_scrape_headlines.py
-        ├── test_identify_risk_headlines.py
-        ├── test_scrape_stories.py
-        └── test_summarise_stories.py
-```
-
 
 ## 🚀 Quick Start
 
@@ -281,23 +246,53 @@ Example:
 
 ```env
 EMAIL_ENABLED=true
-FROM_EMAIL=example@gmail.com
+FROM_EMAIL=your_email@example.com
 EMAIL_RETRY_ATTEMPTS=3
 EMAIL_WAIT_TIME=2
 ```
-**Note:** If you do not have a verified domain, you can leave `FROM_EMAIL` blank. Emails will then be sent using Resend’s default sender (`onboarding@resend.dev`), but only to your own email address.
+**Note:** If you do not have a verified domain, you can leave `FROM_EMAIL` blank. Emails will then be sent using Resend’s default sender (`onboarding@resend.dev`), but only to your own email address. 
 
-## 📐 Architectural Advantages
+## 🗂️ Project Structure
 
-- **Headline deduplication**  
-Previously processed headlines are dropped by comparing new headlines against a database of those successfully processed in past runs (`processed_headlines.db`), reducing unnecessary re-processing. 
-
-- **Batch headline identification**  
-Scraped headlines are combined into numbered batches before a lightweight LLM is instructed to return only the indicies of potential risk headlines, decreasing the number of LLM calls needed for categorisation.
-
-- **Two-stage LLM summarisation**  
-Scraped story text is summarised by a lightweight LLM in batches before an advanced LLM is told to produce a final executive summary using the expert judgement of a head analyst, minimizing irrelevant details. 
-
+```text
+NewsMonitor/
+│
+├── main.py
+├── config.py
+├── links.csv
+├── emails.example.csv
+├── .env.example
+├── requirements.txt
+├── pytest.ini
+│
+├── data/
+│   └── .gitkeep
+│
+├── utils/
+│   ├── __init__.py
+│   └── database.py
+│
+├── newsmonitor/
+│   ├── __init__.py
+│   ├── build_prompts.py
+│   ├── scrape_headlines.py
+│   ├── deduplicate_headlines.py
+│   ├── identify_risk_headlines.py
+│   ├── scrape_stories.py
+│   ├── summarise_stories.py
+│   ├── store_headlines.py
+│   └── email_summaries.py
+│
+└── tests/
+    ├── utils/
+    │   └── test_database.py
+    │
+    └── newsmonitor/
+        ├── test_scrape_headlines.py
+        ├── test_identify_risk_headlines.py
+        ├── test_scrape_stories.py
+        └── test_summarise_stories.py
+```
 
 ## 📃 License
 
