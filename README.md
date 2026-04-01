@@ -11,12 +11,12 @@ The system allows analysts to detect emerging risks such as supply chain disrupt
 
 The pipeline performs the following steps:
 
-1. Scrapes headlines from multiple news listing pages
+1. Scrapes headlines from multiple news pages
 2. Deduplicates headlines against an SQLite database
 3. Uses an LLM to identify risk-relevant headlines
 4. Scrapes full article texts for the flagged stories
 5. Uses a two-stage LLM summarisation process to generate a final summary
-6. Saves the processed summary and headlines to an SQLite database
+6. Saves the final summary and processed headlines to an SQLite database
 7. Optionally sends an email alert to the end user(s)
 
 ## 📐 Design Benefits
@@ -255,7 +255,7 @@ Example:
 
 ```env
 EMAIL_ENABLED=true
-FROM_EMAIL=your_email@example.com
+FROM_EMAIL=your_verified_domain@example.com
 EMAIL_RETRY_ATTEMPTS=3
 EMAIL_WAIT_TIME=2
 ```
@@ -298,9 +298,11 @@ NewsMonitor/
     │
     └── newsmonitor/
         ├── test_scrape_headlines.py
+        ├── test_deduplicate_headlines.py
         ├── test_identify_risk_headlines.py
         ├── test_scrape_stories.py
-        └── test_summarise_stories.py
+        ├── test_summarise_stories.py
+        └── test_store_data.py
 ```
 
 ## 📃 License
