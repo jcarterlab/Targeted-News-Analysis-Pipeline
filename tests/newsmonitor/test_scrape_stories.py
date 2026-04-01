@@ -3,6 +3,10 @@ from bs4 import BeautifulSoup
 from newsmonitor.scrape_stories import extract_story_text
 
 
+# ----------------------------------------------------------------------
+# FIXTURES 
+# ----------------------------------------------------------------------
+
 @pytest.fixture
 def make_paragraph_elements():
     def _make(headline_html):
@@ -14,6 +18,11 @@ def make_paragraph_elements():
 def story_url():
     return 'https://example_url.com'
 
+
+
+# ----------------------------------------------------------------------
+# TESTS 
+# ----------------------------------------------------------------------
 
 class TestExtractStoryText:
     def test_extracts_single_paragraph(self, make_paragraph_elements, story_url):
