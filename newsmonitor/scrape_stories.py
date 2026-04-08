@@ -5,9 +5,21 @@ This module retrieves and extracts article text from news story
 URLs that have been identified as representing a potential risk.
 """
 
+import logging
+import config
+from logging_config import setup_logging
+from datetime import datetime, timezone
 import requests
 from bs4 import BeautifulSoup
 import re
+
+
+# ----------------------------------------------------------------------
+# LOGGING SETUP
+# ----------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
+
 
 
 # ----------------------------------------------------------------------
@@ -164,5 +176,7 @@ def scrape_stories(risk_headlines_df, config):
         total_words += len(story_text.split())
 
     print(f'\nTotal words: {total_words}\n')
+
+    logger.info('Scraped story text words=%d', total_words)
 
     return story_texts

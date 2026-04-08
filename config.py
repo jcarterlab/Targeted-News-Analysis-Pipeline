@@ -37,8 +37,12 @@ else:
 
 # path to news_data.db
 DATA_DIR = BASE_DIR / 'data'
-DATA_DIR.mkdir(exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DATA_DIR / 'news_database.db'
+
+# path to logs/
+LOG_DIR = DATA_DIR / 'logs'
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 # path to emails.csv
 EMAILS_PATH = BASE_DIR / os.getenv('EMAILS_FILE', 'emails.csv')

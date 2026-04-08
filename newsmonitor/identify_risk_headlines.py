@@ -5,9 +5,21 @@ This module processes scraped news headlines and uses an LLM to identify
 those that may represent risks to a specified entity and risk category.
 """
 
+import logging
+import config
+from logging_config import setup_logging
+from datetime import datetime, timezone
 import time
 import re
 from newsmonitor.build_prompts import headline_identification_prompt 
+
+
+# ----------------------------------------------------------------------
+# LOGGING SETUP
+# ----------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
+
 
 
 # ----------------------------------------------------------------------
@@ -229,6 +241,6 @@ def identify_risk_headlines(client, new_headlines_df, config):
     if dup_count > 0:
         print(f'Warning: {dup_count} duplicate indices')
 
-    print(f'\nTotal indices: {len(all_indices)}\n')
+    logger.info('Identified risk headlines count=%d', len(all_indices))
 
     return new_headlines_df.iloc[all_indices]

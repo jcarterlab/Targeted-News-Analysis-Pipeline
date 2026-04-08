@@ -1,8 +1,8 @@
 # 📰 NewsMonitor
 
-A Python pipeline that uses web scraping and LLMs to monitor news, with optional email alerts.
+A Python pipeline that uses web scraping and LLMs for news monitoring, with optional email alerts.
 
-The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. News monitoring can be customised based on the topic of concern (e.g. transport disruption events), entity of concern (e.g. a logistics firm operating in Colombia) and confidence threshold (e.g. the LLM must be at least 95% sure a headline is relevant before scraping and processing the story text). 
+The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. News monitoring can be customised based on the topic of concern (e.g. transport disruption events), entity of concern (e.g. a logistics firm operating in Colombia) and confidence threshold (e.g. the LLM must be at least 95% sure a headline is relevant before scraping the story text). 
 
 **Key technologies:** Python, BeautifulSoup, SQLite, Pandas, Google Gemini API, Resend.
 
@@ -220,7 +220,7 @@ Example:
 RESEND_API_KEY=your_api_key_here
 ```
 
-#### 2) Create an ``emails.csv`` file from the template and enter your email, name and active status. 
+#### 2) Create an `emails.csv` file from the template and enter your email, name and active status. 
 
 Example:
 

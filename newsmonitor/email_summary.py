@@ -1,7 +1,33 @@
+"""
+Email summary module.
+
+This module orchestrates the sending of processed news summaries via email.
+It loads recipient data, filters active users and manages retry logic for
+reliable delivery using the Resend API.
+"""
+
+
+import logging
+import config
+from logging_config import setup_logging
+from datetime import datetime, timezone
 import resend
 import pandas as pd
 import time
 import markdown
+
+
+# ----------------------------------------------------------------------
+# LOGGING SETUP
+# ----------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
+
+
+
+# ----------------------------------------------------------------------
+# HELPER FUNCTIONS 
+# ----------------------------------------------------------------------
 
 def send_email(final_summary, recipient, today_date, config):
     """
@@ -34,6 +60,11 @@ def send_email(final_summary, recipient, today_date, config):
 
     return response
 
+
+
+# ----------------------------------------------------------------------
+# ORCHESTRATION FUNCTIONS 
+# ----------------------------------------------------------------------
 
 def email_summary(final_summary, today_date, config):
     """
@@ -76,6 +107,8 @@ def email_summary(final_summary, today_date, config):
     if active_emails.empty:
         print('No active email recipients found.')
         return
+    
+    successful_sends = 0
 
     for i, recipient in enumerate(active_emails):
         email_sent = False
@@ -87,6 +120,7 @@ def email_summary(final_summary, today_date, config):
                 if 'id' in response:
                     print(f'Email sent to {recipient}: {response["id"]}')
                     email_sent = True
+                    successful_sends += 1
                     break
             
                 print(
@@ -115,3 +149,5 @@ def email_summary(final_summary, today_date, config):
                 f'\nError: could not send email to {recipient}. '
                 f'Moving on after {config.EMAIL_RETRY_ATTEMPTS} attempts.\n'
             )
+
+    logger.info('Emailed summary successful_sends=%d active_emails=%d', successful_sends, len(active_emails))

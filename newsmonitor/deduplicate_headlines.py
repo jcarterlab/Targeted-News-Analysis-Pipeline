@@ -5,11 +5,23 @@ This module orchestrates the deduplication of risk headlines by keeping
 only those whose links are not already stored in the database.
 """
 
+import logging
+import config
+from logging_config import setup_logging
+from datetime import datetime, timezone
 from utils.database_helpers import (
     initialise_database, 
     get_existing_links, 
     filter_new_headlines
 )
+
+
+# ----------------------------------------------------------------------
+# LOGGING SETUP
+# ----------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
+
 
 
 # ----------------------------------------------------------------------
@@ -35,9 +47,9 @@ def deduplicate_headlines(headlines_df, config):
     existing_links = get_existing_links(cursor)
     new_headlines_df = filter_new_headlines(headlines_df, existing_links)
 
-    print(f'Total new headlines: {len(new_headlines_df)}\n')
-
     connection.commit()
     connection.close()
+
+    logger.info('Deduplicated headlines count=%d', len(new_headlines_df))
 
     return new_headlines_df

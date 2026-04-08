@@ -5,11 +5,23 @@ This module retrieves news listing pages, extracts headline text
 and article links, and returns the results as a Pandas DataFrame.
 """
 
+import logging
+import config
+from logging_config import setup_logging
+from datetime import datetime, timezone
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import traceback
+
+
+# ----------------------------------------------------------------------
+# LOGGING SETUP
+# ----------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
+
 
 
 # ----------------------------------------------------------------------
@@ -225,9 +237,7 @@ def scrape_headlines(config):
     missing_cols = required_cols - set(links_df.columns)
     if missing_cols:
         raise RuntimeError(f'{links_path} missing required columns: {sorted(missing_cols)}')
-
-    print(f'\nLinks to be scraped: {len(links_df)}\n')
-
+    
     headlines_dfs = []
 
     for row in links_df.itertuples(index=False):
@@ -255,7 +265,7 @@ def scrape_headlines(config):
 
     if headlines_df.empty:
         raise RuntimeError('No headlines were extracted from any source')
-    
-    print(f'\nTotal headlines: {len(headlines_df)}\n')
+
+    logger.info('Scraped headlines sources=%s count=%d', len(links_df), len(headlines_df))
 
     return headlines_df

@@ -5,11 +5,22 @@ This module orchestrates the storage of processed headlines by inserting
 them into the database once processing has been completed.
 """
 
+import logging
+import config
+from logging_config import setup_logging
+from datetime import datetime, timezone
 from utils.database_helpers import (
     initialise_database, 
     insert_summary, 
     insert_headlines
 )
+
+
+# ----------------------------------------------------------------------
+# LOGGING SETUP
+# ----------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
 
 
 # ----------------------------------------------------------------------
@@ -33,8 +44,9 @@ def store_data(final_summary, new_headlines_df, today_date, config):
     connection, cursor = initialise_database(config)
 
     summary_id = insert_summary(final_summary, today_date, cursor, config)
-
     insert_headlines(new_headlines_df, summary_id, cursor)
 
     connection.commit()
     connection.close()
+
+    logger.info('Stored data summary_id=%s', summary_id)

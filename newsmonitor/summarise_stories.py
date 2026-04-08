@@ -5,8 +5,19 @@ This module converts scraped news story text into a final
 summary using a two-stage LLM summarisation process.
 """
 
+import logging
+import config
+from logging_config import setup_logging
+from datetime import datetime, timezone
 import time
 from newsmonitor.build_prompts import story_text_summarization_prompt, executive_summary_prompt
+
+
+# ----------------------------------------------------------------------
+# LOGGING SETUP
+# ----------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
 
 
 # ----------------------------------------------------------------------
@@ -197,9 +208,6 @@ def get_executive_summary(client, story_text_summaries, today_date, config):
             if not summary_text:
                 raise ValueError('Empty executive summary text returned')
             
-            total_summary_words = len(summary_text.split())
-            print(f'\nTotal summary words: {total_summary_words}\n')
-            
             return summary_text
             
         except Exception as e:
@@ -241,7 +249,7 @@ def summarise_stories(client, story_texts, today_date, config):
             identified or summarisation fails.
     """
     if not story_texts:
-        return "No relevant stories were identified."
+        return 'No relevant stories were identified.'
     
     story_text_batches = batch_story_texts(
         story_texts, 
@@ -259,6 +267,7 @@ def summarise_stories(client, story_texts, today_date, config):
         return 'The LLM was not able to generate a summary'
 
     if len(story_text_summaries) == 1:
+        logger.info('Generated single summary words=%d', len(story_text_summaries[0].split()))
         return story_text_summaries[0]
 
     executive_summary = get_executive_summary(
@@ -270,5 +279,7 @@ def summarise_stories(client, story_texts, today_date, config):
 
     if not executive_summary:
         return 'The LLM was not able to generate a summary'
-            
+
+    logger.info('Generated executive summary words=%d', len(executive_summary.split()))
+
     return executive_summary

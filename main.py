@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from google import genai
+import logging
 import config
+from logging_config import setup_logging
 from newsmonitor.scrape_headlines import scrape_headlines
 from newsmonitor.deduplicate_headlines import deduplicate_headlines
 from newsmonitor.identify_risk_headlines import identify_risk_headlines
@@ -8,6 +10,15 @@ from newsmonitor.scrape_stories import scrape_stories
 from newsmonitor.summarise_stories import summarise_stories
 from newsmonitor.store_data import store_data
 from newsmonitor.email_summary import email_summary
+
+
+# ----------------------------------------------------------------------
+# LOGGING CONFIGURATION
+# ----------------------------------------------------------------------
+
+setup_logging(config.LOG_DIR, logging.INFO)
+logger = logging.getLogger(__name__)
+run_id = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')
 
 
 # ----------------------------------------------------------------------
@@ -30,6 +41,8 @@ def run_pipeline(client, today_date, config):
         str:
             Final summary generated from relevant news stories.
     """
+    logger.info('run_id=%s | Starting run...', run_id)
+
     # Headline collection
     headlines_df = scrape_headlines(config)
     new_headlines_df = deduplicate_headlines(headlines_df, config)
@@ -49,6 +62,8 @@ def run_pipeline(client, today_date, config):
         if config.EMAIL_ENABLED:
             email_summary(final_summary, today_date, config)
 
+    logger.info('run_id=%s - Ending run.\n', run_id)
+
     return final_summary
 
 
@@ -56,7 +71,7 @@ def run_pipeline(client, today_date, config):
 # ENTRY POINT
 # ----------------------------------------------------------------------
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     if not config.GEMINI_API_KEY:
         raise RuntimeError('Please set your Gemini API key in the .env file.')
