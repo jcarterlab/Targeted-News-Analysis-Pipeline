@@ -53,8 +53,11 @@ def extract_story_text(elements, website, story_url):
             Text from a news story joined as a single string. 
     """
     if not elements:
-        print('Warning: no usable text found:\n')
-        print(f'    url={story_url}')
+        logger.warning(
+            'No elements found for story website=%s url=%s',
+            website,
+            story_url
+        )
         return None
 
     seen = set()
@@ -78,18 +81,22 @@ def extract_story_text(elements, website, story_url):
         paragraphs.append(text)
 
     if not paragraphs:
-        print('Warning: no usable text found:\n')
-        print(f'    url={story_url}')
+        logger.warning(
+            'No usable paragraphs extracted website=%s url=%s',
+            website,
+            story_url
+        )
         return None
 
-    print(f'Unique paragraphs scraped: {len(paragraphs)}')
+    logger.debug(
+        'Extracted paragraphs count=%d website=%s url=%s',
+        len(paragraphs),
+        website,
+        story_url
+    )
+
     return ' '.join(paragraphs) 
 
-
-
-# ----------------------------------------------------------------------
-# SCRAPING FUNCTIONS
-# ----------------------------------------------------------------------
 
 def scrape_story_elements(website, story_url, story_tag, story_class, config):
     """
@@ -119,9 +126,12 @@ def scrape_story_elements(website, story_url, story_tag, story_class, config):
             timeout=config.REQUEST_TIMEOUT)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print('Error: unable to scrape story:\n')
-        print(f'    url={story_url}')
-        print(f'    {type(e).__name__}: {e}')
+        logger.error(
+            'Failed to fetch story website=%s url=%s',
+            website,
+            story_url,
+            exc_info=True
+        )
         return []
 
     soup = BeautifulSoup(response.content, "html.parser")
@@ -132,7 +142,20 @@ def scrape_story_elements(website, story_url, story_tag, story_class, config):
         elements = soup.find_all(story_tag)
 
     if not elements:
-        print(f'Warning: no elements found for {story_url}')
+        logger.warning(
+            'No elements found website=%s url=%s tag=%s class=%s',
+            website,
+            story_url,
+            story_tag,
+            story_class
+        )
+
+    logger.debug(
+        'Scraped elements count=%d website=%s url=%s',
+        len(elements),
+        website,
+        story_url
+    )
 
     return elements 
 
@@ -156,8 +179,14 @@ def scrape_stories(risk_headlines_df, config):
         list[str]:
             List of raw scraped texts for successfully scraped news stories.
     """
+    total_stories = len(risk_headlines_df)
     story_texts = []
     total_words = 0
+
+    logger.info(
+        'Starting story scraping total_stories=%d',
+        total_stories
+    )
 
     for row in risk_headlines_df.itertuples():
         website = row.website
@@ -183,8 +212,11 @@ def scrape_stories(risk_headlines_df, config):
         story_texts.append(story_text)
         total_words += len(story_text.split())
 
-    print(f'\nTotal words: {total_words}\n')
-
-    logger.info('Scraped story text words=%d', total_words)
+    logger.info(
+        'Finished story scraping total=%d success=%d words=%d',
+        total_stories,
+        len(story_texts),
+        total_words
+    )
 
     return story_texts
